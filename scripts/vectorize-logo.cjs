@@ -139,11 +139,11 @@ const makeSvg = ( title, description, mapping ) => `<svg viewBox="${ viewBox }" 
 
 fs.writeFileSync(
 	lightPath,
-	makeSvg( 'Pressmind logo', 'Vectorized Pressmind logo without a background.', {} )
+	makeSvg( 'Gutenwright logo', 'Vectorized Gutenwright logo without a background.', {} )
 );
 fs.writeFileSync(
 	darkPath,
-	makeSvg( 'Pressmind logo dark', 'Darker vector Pressmind logo without a background.', {
+	makeSvg( 'Gutenwright logo dark', 'Darker vector Gutenwright logo without a background.', {
 		'rgb(14,56,253)': '#0F172A',
 		'rgb(23,64,253)': '#1E293B',
 		'rgb(161,181,239)': '#475569',

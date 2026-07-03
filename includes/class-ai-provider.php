@@ -2,7 +2,7 @@
 /**
  * AI provider adapter.
  *
- * @package Pressmind
+ * @package Gutenwright
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,20 +12,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Calls an OpenAI-compatible chat completions API.
  */
-class Pressmind_AI_Provider {
+class Gutenwright_AI_Provider {
 	/**
 	 * Settings accessor.
 	 *
-	 * @var Pressmind_Settings
+	 * @var Gutenwright_Settings
 	 */
 	private $settings;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Pressmind_Settings $settings Settings accessor.
+	 * @param Gutenwright_Settings $settings Settings accessor.
 	 */
-	public function __construct( Pressmind_Settings $settings ) {
+	public function __construct( Gutenwright_Settings $settings ) {
 		$this->settings = $settings;
 	}
 
@@ -41,8 +41,8 @@ class Pressmind_AI_Provider {
 
 		if ( empty( $options['api_key'] ) ) {
 			return new WP_Error(
-				'pressmind_missing_api_key',
-				__( 'Missing AI API key. Configure Pressmind settings first.', 'pressmind' ),
+				'gutenwright_missing_api_key',
+				__( 'Missing AI API key. Configure Gutenwright settings first.', 'gutenwright' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -87,10 +87,10 @@ class Pressmind_AI_Provider {
 		$body        = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if ( $status_code < 200 || $status_code >= 300 ) {
-			$message = isset( $body['error']['message'] ) ? $body['error']['message'] : __( 'AI provider request failed.', 'pressmind' );
+			$message = isset( $body['error']['message'] ) ? $body['error']['message'] : __( 'AI provider request failed.', 'gutenwright' );
 
 			return new WP_Error(
-				'pressmind_provider_error',
+				'gutenwright_provider_error',
 				$message,
 				array( 'status' => 502 )
 			);
@@ -119,16 +119,16 @@ class Pressmind_AI_Provider {
 
 		if ( empty( $options['api_key'] ) ) {
 			return new WP_Error(
-				'pressmind_missing_api_key',
-				__( 'Missing AI API key. Configure Pressmind settings first.', 'pressmind' ),
+				'gutenwright_missing_api_key',
+				__( 'Missing AI API key. Configure Gutenwright settings first.', 'gutenwright' ),
 				array( 'status' => 400 )
 			);
 		}
 
 		if ( ! function_exists( 'curl_init' ) ) {
 			return new WP_Error(
-				'pressmind_missing_curl',
-				__( 'PHP cURL is required for streaming AI responses.', 'pressmind' ),
+				'gutenwright_missing_curl',
+				__( 'PHP cURL is required for streaming AI responses.', 'gutenwright' ),
 				array( 'status' => 500 )
 			);
 		}
@@ -231,8 +231,8 @@ class Pressmind_AI_Provider {
 
 		if ( false === $success ) {
 			return new WP_Error(
-				'pressmind_stream_transport_error',
-				$curl_error ? $curl_error : __( 'AI streaming request failed.', 'pressmind' ),
+				'gutenwright_stream_transport_error',
+				$curl_error ? $curl_error : __( 'AI streaming request failed.', 'gutenwright' ),
 				array( 'status' => 502 )
 			);
 		}
@@ -246,7 +246,7 @@ class Pressmind_AI_Provider {
 				} elseif ( '' !== trim( $raw ) ) {
 					$error = sprintf(
 						/* translators: 1: HTTP status code, 2: raw response body. */
-						__( 'AI provider returned HTTP %1$d: %2$s', 'pressmind' ),
+						__( 'AI provider returned HTTP %1$d: %2$s', 'gutenwright' ),
 						(int) $status_code,
 						$this->truncate( $raw, 500 )
 					);
@@ -254,15 +254,15 @@ class Pressmind_AI_Provider {
 			}
 
 			return new WP_Error(
-				'pressmind_provider_error',
-				$error ? $error : __( 'AI provider streaming request failed.', 'pressmind' ),
+				'gutenwright_provider_error',
+				$error ? $error : __( 'AI provider streaming request failed.', 'gutenwright' ),
 				array( 'status' => 502 )
 			);
 		}
 
 		if ( $error ) {
 			return new WP_Error(
-				'pressmind_provider_error',
+				'gutenwright_provider_error',
 				$error,
 				array( 'status' => 502 )
 			);
@@ -299,22 +299,22 @@ class Pressmind_AI_Provider {
 
 		if ( empty( $options['enable_image_generation'] ) ) {
 			return new WP_Error(
-				'pressmind_image_generation_disabled',
-				__( 'Image generation is disabled in Pressmind settings.', 'pressmind' )
+				'gutenwright_image_generation_disabled',
+				__( 'Image generation is disabled in Gutenwright settings.', 'gutenwright' )
 			);
 		}
 
 		if ( empty( $options['api_key'] ) ) {
 			return new WP_Error(
-				'pressmind_missing_api_key',
-				__( 'Missing AI API key. Configure Pressmind settings first.', 'pressmind' )
+				'gutenwright_missing_api_key',
+				__( 'Missing AI API key. Configure Gutenwright settings first.', 'gutenwright' )
 			);
 		}
 
 		if ( ! function_exists( 'curl_init' ) ) {
 			return new WP_Error(
-				'pressmind_missing_curl',
-				__( 'PHP cURL is required for image generation.', 'pressmind' )
+				'gutenwright_missing_curl',
+				__( 'PHP cURL is required for image generation.', 'gutenwright' )
 			);
 		}
 
@@ -356,18 +356,18 @@ class Pressmind_AI_Provider {
 
 		if ( false === $raw_body ) {
 			return new WP_Error(
-				'pressmind_image_transport_error',
-				$curl_error ? $curl_error : __( 'Image generation request failed.', 'pressmind' )
+				'gutenwright_image_transport_error',
+				$curl_error ? $curl_error : __( 'Image generation request failed.', 'gutenwright' )
 			);
 		}
 
 		$body = json_decode( (string) $raw_body, true );
 
 		if ( $status_code < 200 || $status_code >= 300 ) {
-			$message = isset( $body['error']['message'] ) ? $body['error']['message'] : __( 'Image generation request failed.', 'pressmind' );
+			$message = isset( $body['error']['message'] ) ? $body['error']['message'] : __( 'Image generation request failed.', 'gutenwright' );
 
 			return new WP_Error(
-				'pressmind_image_provider_error',
+				'gutenwright_image_provider_error',
 				$message
 			);
 		}
@@ -383,8 +383,8 @@ class Pressmind_AI_Provider {
 
 		if ( '' === $image_base64 ) {
 			return new WP_Error(
-				'pressmind_missing_image_data',
-				__( 'Image generation did not return image data.', 'pressmind' )
+				'gutenwright_missing_image_data',
+				__( 'Image generation did not return image data.', 'gutenwright' )
 			);
 		}
 
@@ -392,8 +392,8 @@ class Pressmind_AI_Provider {
 
 		if ( false === $bytes ) {
 			return new WP_Error(
-				'pressmind_invalid_image_data',
-				__( 'Image generation returned invalid image data.', 'pressmind' )
+				'gutenwright_invalid_image_data',
+				__( 'Image generation returned invalid image data.', 'gutenwright' )
 			);
 		}
 
@@ -421,7 +421,7 @@ class Pressmind_AI_Provider {
 			return array(
 				'type'        => 'json_schema',
 				'json_schema' => array(
-					'name'   => 'pressmind_block_output',
+					'name'   => 'gutenwright_block_output',
 					'strict' => true,
 					'schema' => array(
 						'type'                 => 'object',
@@ -507,16 +507,16 @@ Use core/html for simple/static self-contained custom HTML, SVG, org charts, dia
 If you cannot safely satisfy part of the request, still return valid serializedBlocks for the safe portion and include a warning. Never include explanations outside the JSON object.
 PROMPT;
 
-		if ( function_exists( 'pressmind_is_sandbox_generation_disallowed' ) && pressmind_is_sandbox_generation_disallowed() ) {
-			$prompt .= "\n\nSandboxed AI HTML is disabled because DISALLOW_UNFILTERED_HTML is enabled for this site. Do not return pressmind/sandbox blocks. Do not return core/html that contains scripts, style tags, scoped CSS, event handlers, iframes, stateful controls, or games. If the user asks for interactive or scripted content, return a safe static alternative and include a warning that sandboxed interactive output is disabled by site policy.";
+		if ( function_exists( 'gutenwright_is_sandbox_generation_disallowed' ) && gutenwright_is_sandbox_generation_disallowed() ) {
+			$prompt .= "\n\nSandboxed AI HTML is disabled because DISALLOW_UNFILTERED_HTML is enabled for this site. Do not return gutenwright/sandbox blocks. Do not return core/html that contains scripts, style tags, scoped CSS, event handlers, iframes, stateful controls, or games. If the user asks for interactive or scripted content, return a safe static alternative and include a warning that sandboxed interactive output is disabled by site policy.";
 		} elseif ( ! empty( $options['seamless_mode'] ) ) {
-			$prompt .= "\n\nSeamless mode is enabled. For content that requires JavaScript, script tags, page-level styles, event handlers, state, animation, full-page visual effects such as snow or confetti, or interactive widgets, use the custom Pressmind block. In this mode the block is injected directly into the WordPress page, not isolated in an iframe, so HTML, CSS, and JavaScript may intentionally affect the current page document. Use this serialized block shape:\n<!-- wp:pressmind/sandbox {\"title\":\"Short title\",\"height\":640,\"html\":\"<main id=\\\"app\\\"></main>\",\"css\":\"body{padding:24px;} .snowflake{position:fixed;}\",\"js\":\"const app=document.getElementById('app');\"} /-->\nKeep generated code self-contained and resilient. Use unique ids/classes to avoid accidental collisions. Do not use external network calls, remote scripts, remote stylesheets, cookies, localStorage, parent/window.top access, or navigation.";
+			$prompt .= "\n\nSeamless mode is enabled. For content that requires JavaScript, script tags, page-level styles, event handlers, state, animation, full-page visual effects such as snow or confetti, or interactive widgets, use the custom Gutenwright block. In this mode the block is injected directly into the WordPress page, not isolated in an iframe, so HTML, CSS, and JavaScript may intentionally affect the current page document. Use this serialized block shape:\n<!-- wp:gutenwright/sandbox {\"title\":\"Short title\",\"height\":640,\"html\":\"<main id=\\\"app\\\"></main>\",\"css\":\"body{padding:24px;} .snowflake{position:fixed;}\",\"js\":\"const app=document.getElementById('app');\"} /-->\nKeep generated code self-contained and resilient. Use unique ids/classes to avoid accidental collisions. Do not use external network calls, remote scripts, remote stylesheets, cookies, localStorage, parent/window.top access, or navigation.";
 		} else {
-			$prompt .= "\n\nFor content that requires JavaScript, script tags, style tags, scoped CSS, event handlers, state, buttons, keyboard interaction, or games such as tic-tac-toe, use the custom sandbox block instead of core/html. The sandbox block is rendered inside an isolated iframe with sandbox=\"allow-scripts\", no same-origin access, no parent DOM access, and no plugin/page style leakage. Use this serialized block shape:\n<!-- wp:pressmind/sandbox {\"title\":\"Short title\",\"height\":640,\"html\":\"<main id=\\\"app\\\"></main>\",\"css\":\"body{padding:24px;}\",\"js\":\"const app=document.getElementById('app');\"} /-->\nKeep sandbox HTML, CSS, and JS self-contained. Choose a height large enough for the full UI so the iframe does not need vertical scrolling. Do not use external network calls, remote scripts, remote stylesheets, cookies, localStorage, parent/window.top access, or navigation. Prefer event listeners in JS over inline event handler attributes.";
+			$prompt .= "\n\nFor content that requires JavaScript, script tags, style tags, scoped CSS, event handlers, state, buttons, keyboard interaction, or games such as tic-tac-toe, use the custom sandbox block instead of core/html. The sandbox block is rendered inside an isolated iframe with sandbox=\"allow-scripts\", no same-origin access, no parent DOM access, and no plugin/page style leakage. Use this serialized block shape:\n<!-- wp:gutenwright/sandbox {\"title\":\"Short title\",\"height\":640,\"html\":\"<main id=\\\"app\\\"></main>\",\"css\":\"body{padding:24px;}\",\"js\":\"const app=document.getElementById('app');\"} /-->\nKeep sandbox HTML, CSS, and JS self-contained. Choose a height large enough for the full UI so the iframe does not need vertical scrolling. Do not use external network calls, remote scripts, remote stylesheets, cookies, localStorage, parent/window.top access, or navigation. Prefer event listeners in JS over inline event handler attributes.";
 		}
 
 		if ( ! empty( $options['enable_image_generation'] ) ) {
-			$prompt .= "\n\nImage generation is enabled. When the user asks for a generated image, return a core/image block whose url uses a unique placeholder like PRESSMIND_IMAGE_1, and add a matching asset object: {\"type\":\"image\",\"placeholder\":\"PRESSMIND_IMAGE_1\",\"filename\":\"descriptive-name.png\",\"prompt\":\"Detailed prompt for the image generation model\"}. The PHP backend will generate the image first, import it into the WordPress Media Library, replace the placeholder with the real Media Library URL, and attach the generated attachment ID to the core/image block before returning it to the editor.";
+			$prompt .= "\n\nImage generation is enabled. When the user asks for a generated image, return a core/image block whose url uses a unique placeholder like GUTENWRIGHT_IMAGE_1, and add a matching asset object: {\"type\":\"image\",\"placeholder\":\"GUTENWRIGHT_IMAGE_1\",\"filename\":\"descriptive-name.png\",\"prompt\":\"Detailed prompt for the image generation model\"}. The PHP backend will generate the image first, import it into the WordPress Media Library, replace the placeholder with the real Media Library URL, and attach the generated attachment ID to the core/image block before returning it to the editor.";
 		} else {
 			$prompt .= "\n\nImage generation is disabled. If the user asks for a generated image, do not invent image URLs. Return a warning and offer a non-image block alternative when useful.";
 		}
@@ -598,8 +598,8 @@ PROMPT;
 
 		if ( ! is_array( $decoded ) ) {
 			return new WP_Error(
-				'pressmind_invalid_provider_json',
-				__( 'AI provider returned invalid JSON.', 'pressmind' ),
+				'gutenwright_invalid_provider_json',
+				__( 'AI provider returned invalid JSON.', 'gutenwright' ),
 				array( 'status' => 502 )
 			);
 		}

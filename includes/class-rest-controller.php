@@ -2,7 +2,7 @@
 /**
  * REST API controller.
  *
- * @package Pressmind
+ * @package Gutenwright
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,24 +12,27 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Handles editor generation requests.
  */
-class Pressmind_REST_Controller {
-	const NAMESPACE = 'pressmind/v1';
-	const ROUTE     = '/generate';
-	const STREAM_ROUTE = '/generate-stream';
+class Gutenwright_REST_Controller {
+	const NAMESPACE            = 'gutenwright/v1';
+	const LEGACY_NAMESPACE     = 'pressmind/v1';
+	const ROUTE                = '/generate';
+	const STREAM_ROUTE         = '/generate-stream';
+	const SANDBOX_BLOCK        = 'gutenwright/sandbox';
+	const LEGACY_SANDBOX_BLOCK = 'pressmind/sandbox';
 
 	/**
 	 * AI provider.
 	 *
-	 * @var Pressmind_AI_Provider
+	 * @var Gutenwright_AI_Provider
 	 */
 	private $provider;
 
 	/**
 	 * Constructor.
 	 *
-	 * @param Pressmind_AI_Provider $provider AI provider.
+	 * @param Gutenwright_AI_Provider $provider AI provider.
 	 */
-	public function __construct( Pressmind_AI_Provider $provider ) {
+	public function __construct( Gutenwright_AI_Provider $provider ) {
 		$this->provider = $provider;
 	}
 
@@ -44,57 +47,59 @@ class Pressmind_REST_Controller {
 	 * Register routes.
 	 */
 	public function register_routes() {
-		register_rest_route(
-			self::NAMESPACE,
-			self::ROUTE,
-			array(
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => array( $this, 'generate' ),
-				'permission_callback' => array( $this, 'permissions_check' ),
-				'args'                => array(
-					'prompt'  => array(
-						'required'          => true,
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_textarea_field',
+		foreach ( array( self::NAMESPACE, self::LEGACY_NAMESPACE ) as $namespace ) {
+			register_rest_route(
+				$namespace,
+				self::ROUTE,
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'generate' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
+					'args'                => array(
+						'prompt'  => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_textarea_field',
+						),
+						'postId'  => array(
+							'required'          => false,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						),
+						'context' => array(
+							'required' => false,
+							'type'     => 'object',
+						),
 					),
-					'postId'  => array(
-						'required'          => false,
-						'type'              => 'integer',
-						'sanitize_callback' => 'absint',
-					),
-					'context' => array(
-						'required' => false,
-						'type'     => 'object',
-					),
-				),
-			)
-		);
+				)
+			);
 
-		register_rest_route(
-			self::NAMESPACE,
-			self::STREAM_ROUTE,
-			array(
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => array( $this, 'stream_generate' ),
-				'permission_callback' => array( $this, 'permissions_check' ),
-				'args'                => array(
-					'prompt'  => array(
-						'required'          => true,
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_textarea_field',
+			register_rest_route(
+				$namespace,
+				self::STREAM_ROUTE,
+				array(
+					'methods'             => WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'stream_generate' ),
+					'permission_callback' => array( $this, 'permissions_check' ),
+					'args'                => array(
+						'prompt'  => array(
+							'required'          => true,
+							'type'              => 'string',
+							'sanitize_callback' => 'sanitize_textarea_field',
+						),
+						'postId'  => array(
+							'required'          => false,
+							'type'              => 'integer',
+							'sanitize_callback' => 'absint',
+						),
+						'context' => array(
+							'required' => false,
+							'type'     => 'object',
+						),
 					),
-					'postId'  => array(
-						'required'          => false,
-						'type'              => 'integer',
-						'sanitize_callback' => 'absint',
-					),
-					'context' => array(
-						'required' => false,
-						'type'     => 'object',
-					),
-				),
-			)
-		);
+				)
+			);
+		}
 	}
 
 	/**
@@ -127,8 +132,8 @@ class Pressmind_REST_Controller {
 
 		if ( '' === $prompt ) {
 			return new WP_Error(
-				'pressmind_empty_prompt',
-				__( 'Prompt cannot be empty.', 'pressmind' ),
+				'gutenwright_empty_prompt',
+				__( 'Prompt cannot be empty.', 'gutenwright' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -170,8 +175,8 @@ class Pressmind_REST_Controller {
 
 		if ( '' === $prompt ) {
 			return new WP_Error(
-				'pressmind_empty_prompt',
-				__( 'Prompt cannot be empty.', 'pressmind' ),
+				'gutenwright_empty_prompt',
+				__( 'Prompt cannot be empty.', 'gutenwright' ),
 				array( 'status' => 400 )
 			);
 		}
@@ -180,7 +185,7 @@ class Pressmind_REST_Controller {
 		$this->send_event_stream_message(
 			'start',
 			array(
-				'message' => __( 'Connected. Waiting for AI tokens...', 'pressmind' ),
+				'message' => __( 'Connected. Waiting for AI tokens...', 'gutenwright' ),
 			)
 		);
 		$context = $this->hydrate_context( $context, $post_id );
@@ -526,7 +531,7 @@ class Pressmind_REST_Controller {
 		$filename = isset( $asset['filename'] ) ? sanitize_file_name( $asset['filename'] ) : '';
 
 		if ( empty( $filename ) ) {
-			$filename = 'image' === $type ? 'pressmind-generated-image.png' : 'pressmind-generated-asset';
+			$filename = 'image' === $type ? 'gutenwright-generated-image.png' : 'gutenwright-generated-asset';
 		}
 
 		if ( ! $url && 'image' === $type && $prompt ) {
@@ -535,8 +540,8 @@ class Pressmind_REST_Controller {
 
 		if ( ! $url ) {
 			return new WP_Error(
-				'pressmind_asset_missing_url',
-				__( 'Generated asset did not include an importable URL.', 'pressmind' )
+				'gutenwright_asset_missing_url',
+				__( 'Generated asset did not include an importable URL.', 'gutenwright' )
 			);
 		}
 
@@ -579,8 +584,8 @@ class Pressmind_REST_Controller {
 	private function import_generated_image_asset( $prompt, $filename ) {
 		if ( ! $this->provider->is_image_generation_enabled() ) {
 			return new WP_Error(
-				'pressmind_image_generation_disabled',
-				__( 'Image generation is disabled in plugin settings.', 'pressmind' )
+				'gutenwright_image_generation_disabled',
+				__( 'Image generation is disabled in plugin settings.', 'gutenwright' )
 			);
 		}
 
@@ -604,8 +609,8 @@ class Pressmind_REST_Controller {
 
 		if ( ! $temp_file ) {
 			return new WP_Error(
-				'pressmind_image_temp_file_failed',
-				__( 'Could not create a temporary file for the generated image.', 'pressmind' )
+				'gutenwright_image_temp_file_failed',
+				__( 'Could not create a temporary file for the generated image.', 'gutenwright' )
 			);
 		}
 
@@ -613,8 +618,8 @@ class Pressmind_REST_Controller {
 			@unlink( $temp_file );
 
 			return new WP_Error(
-				'pressmind_image_write_failed',
-				__( 'Could not write the generated image file.', 'pressmind' )
+				'gutenwright_image_write_failed',
+				__( 'Could not write the generated image file.', 'gutenwright' )
 			);
 		}
 
@@ -688,10 +693,10 @@ class Pressmind_REST_Controller {
 		if ( '' === $serialized_blocks ) {
 			if ( ! empty( $warnings ) ) {
 				return new WP_Error(
-					'pressmind_asset_generation_failed',
+					'gutenwright_asset_generation_failed',
 					sprintf(
 						/* translators: %s: comma-separated provider warning messages. */
-						__( 'Generation failed: %s', 'pressmind' ),
+						__( 'Generation failed: %s', 'gutenwright' ),
 						implode( '; ', $warnings )
 					),
 					array( 'status' => 502 )
@@ -702,13 +707,13 @@ class Pressmind_REST_Controller {
 			$detail  = $summary
 				? sprintf(
 					/* translators: %s: model-provided summary. */
-					__( 'AI provider returned a description but no block markup. Model said: "%s". Try a more specific block prompt (e.g. "as a paragraph", "as a core/image block").', 'pressmind' ),
+					__( 'AI provider returned a description but no block markup. Model said: "%s". Try a more specific block prompt (e.g. "as a paragraph", "as a core/image block").', 'gutenwright' ),
 					$summary
 				)
-				: __( 'AI provider did not return any block markup.', 'pressmind' );
+				: __( 'AI provider did not return any block markup.', 'gutenwright' );
 
 			return new WP_Error(
-				'pressmind_empty_blocks',
+				'gutenwright_empty_blocks',
 				$detail,
 				array( 'status' => 502 )
 			);
@@ -723,8 +728,8 @@ class Pressmind_REST_Controller {
 
 		if ( empty( $blocks ) ) {
 			return new WP_Error(
-				'pressmind_invalid_blocks',
-				__( 'AI provider returned unsupported or invalid block markup.', 'pressmind' ),
+				'gutenwright_invalid_blocks',
+				__( 'AI provider returned unsupported or invalid block markup.', 'gutenwright' ),
 				array( 'status' => 502 )
 			);
 		}
@@ -763,11 +768,12 @@ class Pressmind_REST_Controller {
 				}
 			}
 
-			if ( isset( $block['blockName'] ) && 'pressmind/sandbox' === $block['blockName'] ) {
+			if ( isset( $block['blockName'] ) && $this->is_sandbox_block_name( $block['blockName'] ) ) {
 				if ( $this->is_sandbox_generation_disallowed() ) {
 					return $this->get_sandbox_disallowed_error();
 				}
 
+				$block['blockName']    = self::SANDBOX_BLOCK;
 				$block['attrs']        = $this->sanitize_sandbox_attrs(
 					isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : array()
 				);
@@ -833,7 +839,7 @@ class Pressmind_REST_Controller {
 	 */
 	private function blocks_require_sandbox( array $blocks ) {
 		foreach ( $blocks as $block ) {
-			if ( isset( $block['blockName'] ) && 'pressmind/sandbox' === $block['blockName'] ) {
+			if ( isset( $block['blockName'] ) && $this->is_sandbox_block_name( $block['blockName'] ) ) {
 				return true;
 			}
 
@@ -850,14 +856,24 @@ class Pressmind_REST_Controller {
 	}
 
 	/**
+	 * Check current and legacy sandbox block names.
+	 *
+	 * @param string $block_name Block name.
+	 * @return bool
+	 */
+	private function is_sandbox_block_name( $block_name ) {
+		return in_array( $block_name, array( self::SANDBOX_BLOCK, self::LEGACY_SANDBOX_BLOCK ), true );
+	}
+
+	/**
 	 * Build the shared sandbox policy error.
 	 *
 	 * @return WP_Error
 	 */
 	private function get_sandbox_disallowed_error() {
 		return new WP_Error(
-			'pressmind_sandbox_disallowed',
-			__( 'Sandboxed AI HTML is disabled because DISALLOW_UNFILTERED_HTML is enabled for this site. Ask for static blocks, HTML, or SVG without scripts or style tags instead.', 'pressmind' ),
+			'gutenwright_sandbox_disallowed',
+			__( 'Sandboxed AI HTML is disabled because DISALLOW_UNFILTERED_HTML is enabled for this site. Ask for static blocks, HTML, or SVG without scripts or style tags instead.', 'gutenwright' ),
 			array( 'status' => 403 )
 		);
 	}
@@ -868,8 +884,8 @@ class Pressmind_REST_Controller {
 	 * @return bool
 	 */
 	private function is_sandbox_generation_disallowed() {
-		if ( function_exists( 'pressmind_is_sandbox_generation_disallowed' ) ) {
-			return pressmind_is_sandbox_generation_disallowed();
+		if ( function_exists( 'gutenwright_is_sandbox_generation_disallowed' ) ) {
+			return gutenwright_is_sandbox_generation_disallowed();
 		}
 
 		if ( ! defined( 'DISALLOW_UNFILTERED_HTML' ) ) {
@@ -916,10 +932,10 @@ class Pressmind_REST_Controller {
 		$html = preg_replace( '/<\s*script\b[^>]*>.*?<\s*\/\s*script\s*>/is', '', $html );
 
 		return array(
-			'blockName'    => 'pressmind/sandbox',
+			'blockName'    => self::SANDBOX_BLOCK,
 			'attrs'        => $this->sanitize_sandbox_attrs(
 				array(
-					'title'  => __( 'AI generated interactive content', 'pressmind' ),
+					'title'  => __( 'AI generated interactive content', 'gutenwright' ),
 					'height' => 640,
 					'html'   => $html,
 					'css'    => $css,
@@ -1074,7 +1090,8 @@ class Pressmind_REST_Controller {
 			'core/separator',
 			'core/spacer',
 			'core/embed',
-			'pressmind/sandbox',
+			self::SANDBOX_BLOCK,
+			self::LEGACY_SANDBOX_BLOCK,
 		);
 	}
 
@@ -1089,7 +1106,7 @@ class Pressmind_REST_Controller {
 	 */
 	private function sanitize_sandbox_attrs( array $attrs ) {
 		return array(
-			'title'  => isset( $attrs['title'] ) ? sanitize_text_field( $attrs['title'] ) : __( 'AI generated interactive content', 'pressmind' ),
+			'title'  => isset( $attrs['title'] ) ? sanitize_text_field( $attrs['title'] ) : __( 'AI generated interactive content', 'gutenwright' ),
 			'height' => isset( $attrs['height'] ) ? max( 240, min( 1200, absint( $attrs['height'] ) ) ) : 640,
 			'html'   => isset( $attrs['html'] ) ? $this->strip_sandbox_network_access( (string) $attrs['html'] ) : '',
 			'css'    => isset( $attrs['css'] ) ? $this->strip_sandbox_network_access( (string) $attrs['css'] ) : '',

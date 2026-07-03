@@ -11,7 +11,7 @@ import { useDispatch, useSelect } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
-const pressmindPromptBlockSettings = window.pressmindPromptBlock || {};
+const gutenwrightPromptBlockSettings = window.gutenwrightPromptBlock || {};
 
 const normalizeEditorValue = ( value ) => {
 	if ( typeof value === 'string' ) {
@@ -76,7 +76,7 @@ const parseServerSentEvent = ( rawEvent ) => {
 
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const blockProps = useBlockProps( {
-		className: 'pressmind-prompt-block',
+		className: 'gutenwright-prompt-block',
 	} );
 
 	const [ prompt, setPromptState ] = useState( attributes.prompt || '' );
@@ -139,18 +139,18 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		const trimmedPrompt = prompt.trim();
 
 		if ( ! trimmedPrompt ) {
-			setError( __( 'Enter a prompt first.', 'pressmind' ) );
+			setError( __( 'Enter a prompt first.', 'gutenwright' ) );
 			return;
 		}
 
 		setIsGenerating( true );
 		setError( '' );
 		setStreamText( '' );
-		setStreamStatus( __( 'Connecting to AI stream…', 'pressmind' ) );
+		setStreamStatus( __( 'Connecting to AI stream…', 'gutenwright' ) );
 
 		try {
 			const response = await fetch(
-				getRestUrl( '/pressmind/v1/generate-stream' ),
+				getRestUrl( '/gutenwright/v1/generate-stream' ),
 				{
 					method: 'POST',
 					credentials: 'same-origin',
@@ -169,10 +169,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 							selectedBlocks: editorContext.selectedBlocks,
 							allBlocks: editorContext.allBlocks,
 							sandboxGenerationDisabled: Boolean(
-								pressmindPromptBlockSettings.disallowSandboxGeneration
+								gutenwrightPromptBlockSettings.disallowSandboxGeneration
 							),
 							seamlessMode: Boolean(
-								pressmindPromptBlockSettings.seamlessMode
+								gutenwrightPromptBlockSettings.seamlessMode
 							),
 						},
 					} ),
@@ -183,7 +183,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				throw new Error(
 					__(
 						'The streaming request failed before generation started.',
-						'pressmind'
+						'gutenwright'
 					)
 				);
 			}
@@ -192,7 +192,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				throw new Error(
 					__(
 						'This browser does not support streaming responses.',
-						'pressmind'
+						'gutenwright'
 					)
 				);
 			}
@@ -214,14 +214,14 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						parsedEvent.data.message ||
 							__(
 								'Connected. Waiting for AI tokens…',
-								'pressmind'
+								'gutenwright'
 							)
 					);
 				}
 
 				if ( parsedEvent.event === 'token' ) {
 					setStreamStatus(
-						__( 'Streaming AI tokens…', 'pressmind' )
+						__( 'Streaming AI tokens…', 'gutenwright' )
 					);
 					setStreamText(
 						( current ) =>
@@ -235,7 +235,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 				if ( parsedEvent.event === 'final' ) {
 					setStreamStatus(
-						__( 'Rendering generated blocks…', 'pressmind' )
+						__( 'Rendering generated blocks…', 'gutenwright' )
 					);
 					finalResponse = parsedEvent.data;
 				}
@@ -266,7 +266,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				throw new Error(
 					__(
 						'The AI stream ended without final blocks.',
-						'pressmind'
+						'gutenwright'
 					)
 				);
 			}
@@ -279,7 +279,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				throw new Error(
 					__(
 						'The AI response did not contain insertable blocks.',
-						'pressmind'
+						'gutenwright'
 					)
 				);
 			}
@@ -287,7 +287,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			replaceBlocks( clientId, parsedBlocks );
 			createSuccessNotice(
 				finalResponse.summary ||
-					__( 'AI-generated blocks inserted.', 'pressmind' ),
+					__( 'AI-generated blocks inserted.', 'gutenwright' ),
 				{ type: 'snackbar' }
 			);
 		} catch ( apiError ) {
@@ -295,7 +295,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				apiError?.message ||
 				__(
 					'The AI request failed. Check your provider settings and try again.',
-					'pressmind'
+					'gutenwright'
 				);
 
 			setError( message );
@@ -310,13 +310,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		<div { ...blockProps }>
 			<Placeholder
 				icon="superhero"
-				label={ __( 'Pressmind', 'pressmind' ) }
+				label={ __( 'Gutenwright', 'gutenwright' ) }
 				instructions={ __(
 					'Describe the block or section you want. The current post context will be sent securely through WordPress.',
-					'pressmind'
+					'gutenwright'
 				) }
 			>
-				<div className="pressmind-prompt-block__body">
+				<div className="gutenwright-prompt-block__body">
 					{ error ? (
 						<Notice
 							status="error"
@@ -328,40 +328,40 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					) : null }
 
 					<TextareaControl
-						label={ __( 'Prompt', 'pressmind' ) }
+						label={ __( 'Prompt', 'gutenwright' ) }
 						value={ prompt }
 						onChange={ setPrompt }
 						rows={ 5 }
 						placeholder={ __(
 							'Example: Create an accessible SVG org chart from the teams described in this post.',
-							'pressmind'
+							'gutenwright'
 						) }
 						disabled={ isGenerating }
 					/>
 
-					<div className="pressmind-prompt-block__actions">
+					<div className="gutenwright-prompt-block__actions">
 						<Button
 							variant="primary"
 							onClick={ generateBlocks }
 							disabled={ isGenerating || ! prompt.trim() }
 						>
 							{ isGenerating
-								? __( 'Generating…', 'pressmind' )
-								: __( 'Generate Blocks', 'pressmind' ) }
+								? __( 'Generating…', 'gutenwright' )
+								: __( 'Generate Blocks', 'gutenwright' ) }
 						</Button>
 						{ isGenerating ? <Spinner /> : null }
 					</div>
 
 					{ isGenerating ? (
-						<div className="pressmind-prompt-block__stream-wrap">
-							<p className="pressmind-prompt-block__stream-status">
+						<div className="gutenwright-prompt-block__stream-wrap">
+							<p className="gutenwright-prompt-block__stream-status">
 								{ streamStatus }
 							</p>
-							<pre className="pressmind-prompt-block__stream">
+							<pre className="gutenwright-prompt-block__stream">
 								{ streamText ||
 									__(
 										'Waiting for the first token…',
-										'pressmind'
+										'gutenwright'
 									) }
 							</pre>
 						</div>

@@ -1,24 +1,24 @@
-.pressmind-prompt-block {
-	.pressmind-prompt-block__body {
+.gutenwright-prompt-block {
+	.gutenwright-prompt-block__body {
 		width: 100%;
 	}
 
-	.pressmind-prompt-block__actions {
+	.gutenwright-prompt-block__actions {
 		align-items: center;
 		display: flex;
 		gap: 8px;
 		margin-top: 12px;
 	}
 
-	.pressmind-prompt-block__stream-wrap {
+	.gutenwright-prompt-block__stream-wrap {
 		margin-top: 12px;
 	}
 
-	.pressmind-prompt-block__stream-status {
+	.gutenwright-prompt-block__stream-status {
 		margin: 0 0 6px;
 	}
 
-	.pressmind-prompt-block__stream {
+	.gutenwright-prompt-block__stream {
 		background: #111;
 		border-radius: 4px;
 		color: #f6f7f7;
@@ -33,8 +33,8 @@
 	}
 }
 
-.pressmind-sandbox-block__editor,
-.pressmind-ai-edit-panel {
+.gutenwright-sandbox-block__editor,
+.gutenwright-ai-edit-panel {
 	background: #f6f7f7;
 	border: 1px solid #ddd;
 	border-radius: 4px;
@@ -45,20 +45,20 @@
 	width: 100%;
 }
 
-.pressmind-ai-edit-panel {
+.gutenwright-ai-edit-panel {
 	display: block;
 }
 
-.pressmind-ai-edit-panel .components-base-control,
-.pressmind-ai-edit-panel .components-textarea-control__input {
+.gutenwright-ai-edit-panel .components-base-control,
+.gutenwright-ai-edit-panel .components-textarea-control__input {
 	max-width: 100%;
 }
 
-.pressmind-ai-edit-panel .components-spinner {
+.gutenwright-ai-edit-panel .components-spinner {
 	margin-left: 8px;
 }
 
-.pressmind-seamless-block {
+.gutenwright-seamless-block {
 	background: #fff;
 	border: 1px solid #ddd;
 	border-radius: 4px;

@@ -22,16 +22,21 @@ import metadata from './block.json';
 import './editor.scss';
 import save from './save';
 
-const pressmindPromptBlockSettings = window.pressmindPromptBlock || {};
+const PROMPT_BLOCK_NAME = metadata.name;
+const LEGACY_PROMPT_BLOCK_NAME = 'pressmind/prompt-block';
+const SANDBOX_BLOCK_NAME = 'gutenwright/sandbox';
+const LEGACY_SANDBOX_BLOCK_NAME = 'pressmind/sandbox';
+const SANDBOX_BLOCK_NAMES = [ SANDBOX_BLOCK_NAME, LEGACY_SANDBOX_BLOCK_NAME ];
+const gutenwrightPromptBlockSettings = window.gutenwrightPromptBlock || {};
 const isSandboxGenerationDisallowed = Boolean(
-	pressmindPromptBlockSettings.disallowSandboxGeneration
+	gutenwrightPromptBlockSettings.disallowSandboxGeneration
 );
 const isSeamlessModeEnabled = Boolean(
-	pressmindPromptBlockSettings.seamlessMode
+	gutenwrightPromptBlockSettings.seamlessMode
 );
 const sandboxDisallowedMessage = __(
 	'Sandboxed AI HTML is disabled because DISALLOW_UNFILTERED_HTML is enabled for this site.',
-	'pressmind'
+	'gutenwright'
 );
 
 const stripHtml = ( value = '' ) => {
@@ -51,11 +56,11 @@ const textFromAttributes = ( attributes = {} ) =>
 	);
 
 const createPromptBlockFromText = ( attributes ) =>
-	createBlock( metadata.name, {
+	createBlock( PROMPT_BLOCK_NAME, {
 		prompt: textFromAttributes( attributes ),
 	} );
 
-registerBlockType( metadata.name, {
+const promptBlockSettings = {
 	edit: Edit,
 	save,
 	transforms: {
@@ -75,6 +80,12 @@ registerBlockType( metadata.name, {
 			},
 		],
 	},
+};
+
+registerBlockType( PROMPT_BLOCK_NAME, promptBlockSettings );
+registerBlockType( LEGACY_PROMPT_BLOCK_NAME, {
+	...promptBlockSettings,
+	title: __( 'Legacy Gutenwright Prompt', 'gutenwright' ),
 } );
 
 const buildSandboxSrcDoc = ( { html = '', css = '', js = '' }, sandboxId ) => {
@@ -94,7 +105,7 @@ const buildSandboxSrcDoc = ( { html = '', css = '', js = '' }, sandboxId ) => {
 				));
 				if (height && Math.abs(height - lastHeight) > 1) {
 					lastHeight = height;
-					parent.postMessage({ type: 'pressmind:sandbox:resize', id: sandboxId, height: height }, '*');
+					parent.postMessage({ type: 'gutenwright:sandbox:resize', id: sandboxId, height: height }, '*');
 				}
 			}
 			window.addEventListener('load', measure);
@@ -161,7 +172,7 @@ function SeamlessPreview( { attributes } ) {
 		}
 
 		const content = document.createElement( 'div' );
-		content.className = 'pressmind-seamless-block__html';
+		content.className = 'gutenwright-seamless-block__html';
 		content.innerHTML = attributes.html || '';
 		node.appendChild( content );
 
@@ -170,7 +181,7 @@ function SeamlessPreview( { attributes } ) {
 				window.Function( attributes.js )();
 			} catch ( error ) {
 				// eslint-disable-next-line no-console
-				console.error( 'Pressmind seamless block failed', error );
+				console.error( 'Gutenwright seamless block failed', error );
 			}
 		}
 	}, [ attributes.html, attributes.css, attributes.js ] );
@@ -178,8 +189,8 @@ function SeamlessPreview( { attributes } ) {
 	return (
 		<div
 			ref={ previewRef }
-			className="pressmind-seamless-block"
-			data-pressmind-mode="seamless"
+			className="gutenwright-seamless-block"
+			data-gutenwright-mode="seamless"
 			aria-label={ attributes.title }
 		/>
 	);
@@ -187,10 +198,10 @@ function SeamlessPreview( { attributes } ) {
 
 function SandboxEdit( { attributes, setAttributes, isSelected, clientId } ) {
 	const blockProps = useBlockProps( {
-		className: 'pressmind-sandbox-block',
+		className: 'gutenwright-sandbox-block',
 	} );
 	const iframeRef = useRef();
-	const sandboxId = `pressmind-sandbox-${ clientId }`;
+	const sandboxId = `gutenwright-sandbox-${ clientId }`;
 	const minHeight = Math.max( 240, Number( attributes.height ) || 640 );
 	const [ iframeHeight, setIframeHeight ] = useState( minHeight );
 
@@ -207,7 +218,7 @@ function SandboxEdit( { attributes, setAttributes, isSelected, clientId } ) {
 			const data = event.data || {};
 
 			if (
-				data.type !== 'pressmind:sandbox:resize' ||
+				data.type !== 'gutenwright:sandbox:resize' ||
 				data.id !== sandboxId
 			) {
 				return;
@@ -230,14 +241,14 @@ function SandboxEdit( { attributes, setAttributes, isSelected, clientId } ) {
 		return (
 			<div { ...blockProps }>
 				{ isSelected ? (
-					<div className="pressmind-sandbox-block__editor">
+					<div className="gutenwright-sandbox-block__editor">
 						<TextControl
-							label={ __( 'Title', 'pressmind' ) }
+							label={ __( 'Title', 'gutenwright' ) }
 							value={ attributes.title }
 							onChange={ ( title ) => setAttributes( { title } ) }
 						/>
 						<TextControl
-							label={ __( 'Height', 'pressmind' ) }
+							label={ __( 'Height', 'gutenwright' ) }
 							type="number"
 							value={ attributes.height }
 							onChange={ ( nextHeight ) =>
@@ -259,14 +270,14 @@ function SandboxEdit( { attributes, setAttributes, isSelected, clientId } ) {
 		return (
 			<div { ...blockProps }>
 				{ isSelected ? (
-					<div className="pressmind-sandbox-block__editor">
+					<div className="gutenwright-sandbox-block__editor">
 						<TextControl
-							label={ __( 'Title', 'pressmind' ) }
+							label={ __( 'Title', 'gutenwright' ) }
 							value={ attributes.title }
 							onChange={ ( title ) => setAttributes( { title } ) }
 						/>
 						<TextControl
-							label={ __( 'Height', 'pressmind' ) }
+							label={ __( 'Height', 'gutenwright' ) }
 							type="number"
 							value={ attributes.height }
 							onChange={ ( nextHeight ) =>
@@ -276,19 +287,19 @@ function SandboxEdit( { attributes, setAttributes, isSelected, clientId } ) {
 							}
 						/>
 						<TextareaControl
-							label={ __( 'HTML', 'pressmind' ) }
+							label={ __( 'HTML', 'gutenwright' ) }
 							value={ attributes.html }
 							rows={ 6 }
 							onChange={ ( html ) => setAttributes( { html } ) }
 						/>
 						<TextareaControl
-							label={ __( 'CSS', 'pressmind' ) }
+							label={ __( 'CSS', 'gutenwright' ) }
 							value={ attributes.css }
 							rows={ 6 }
 							onChange={ ( css ) => setAttributes( { css } ) }
 						/>
 						<TextareaControl
-							label={ __( 'JavaScript', 'pressmind' ) }
+							label={ __( 'JavaScript', 'gutenwright' ) }
 							value={ attributes.js }
 							rows={ 6 }
 							onChange={ ( js ) => setAttributes( { js } ) }
@@ -296,7 +307,7 @@ function SandboxEdit( { attributes, setAttributes, isSelected, clientId } ) {
 						<Notice status="warning" isDismissible={ false }>
 							{ __(
 								'Seamless mode is enabled. This block injects generated HTML, CSS, and JavaScript directly into the editor preview and the published page.',
-								'pressmind'
+								'gutenwright'
 							) }
 						</Notice>
 					</div>
@@ -309,14 +320,14 @@ function SandboxEdit( { attributes, setAttributes, isSelected, clientId } ) {
 	return (
 		<div { ...blockProps }>
 			{ isSelected ? (
-				<div className="pressmind-sandbox-block__editor">
+				<div className="gutenwright-sandbox-block__editor">
 					<TextControl
-						label={ __( 'Title', 'pressmind' ) }
+						label={ __( 'Title', 'gutenwright' ) }
 						value={ attributes.title }
 						onChange={ ( title ) => setAttributes( { title } ) }
 					/>
 					<TextControl
-						label={ __( 'Height', 'pressmind' ) }
+						label={ __( 'Height', 'gutenwright' ) }
 						type="number"
 						value={ attributes.height }
 						onChange={ ( nextHeight ) =>
@@ -326,19 +337,19 @@ function SandboxEdit( { attributes, setAttributes, isSelected, clientId } ) {
 						}
 					/>
 					<TextareaControl
-						label={ __( 'HTML', 'pressmind' ) }
+						label={ __( 'HTML', 'gutenwright' ) }
 						value={ attributes.html }
 						rows={ 6 }
 						onChange={ ( html ) => setAttributes( { html } ) }
 					/>
 					<TextareaControl
-						label={ __( 'CSS', 'pressmind' ) }
+						label={ __( 'CSS', 'gutenwright' ) }
 						value={ attributes.css }
 						rows={ 6 }
 						onChange={ ( css ) => setAttributes( { css } ) }
 					/>
 					<TextareaControl
-						label={ __( 'JavaScript', 'pressmind' ) }
+						label={ __( 'JavaScript', 'gutenwright' ) }
 						value={ attributes.js }
 						rows={ 6 }
 						onChange={ ( js ) => setAttributes( { js } ) }
@@ -435,26 +446,25 @@ function AiEditPanel( { blockName, clientId, attributes } ) {
 	}, [] );
 
 	const serializedBlock = block ? serialize( [ block ] ) : '';
-	const existingCode =
-		blockName === 'pressmind/sandbox'
-			? JSON.stringify(
-					{
-						title: attributes.title,
-						height: attributes.height,
-						html: attributes.html,
-						css: attributes.css,
-						js: attributes.js,
-					},
-					null,
-					2
-			  )
-			: attributes.content || serializedBlock;
+	const existingCode = SANDBOX_BLOCK_NAMES.includes( blockName )
+		? JSON.stringify(
+				{
+					title: attributes.title,
+					height: attributes.height,
+					html: attributes.html,
+					css: attributes.css,
+					js: attributes.js,
+				},
+				null,
+				2
+		  )
+		: attributes.content || serializedBlock;
 
 	const refineBlock = async () => {
 		const trimmedPrompt = prompt.trim();
 
 		if ( ! trimmedPrompt ) {
-			setError( __( 'Enter an edit prompt first.', 'pressmind' ) );
+			setError( __( 'Enter an edit prompt first.', 'gutenwright' ) );
 			return;
 		}
 
@@ -464,7 +474,7 @@ function AiEditPanel( { blockName, clientId, attributes } ) {
 
 		try {
 			const response = await fetch(
-				getRestUrl( '/pressmind/v1/generate-stream' ),
+				getRestUrl( '/gutenwright/v1/generate-stream' ),
 				{
 					method: 'POST',
 					credentials: 'same-origin',
@@ -493,7 +503,7 @@ function AiEditPanel( { blockName, clientId, attributes } ) {
 
 			if ( ! response.ok || ! response.body?.getReader ) {
 				throw new Error(
-					__( 'The AI edit request failed.', 'pressmind' )
+					__( 'The AI edit request failed.', 'gutenwright' )
 				);
 			}
 
@@ -544,7 +554,7 @@ function AiEditPanel( { blockName, clientId, attributes } ) {
 
 			if ( ! finalResponse ) {
 				throw new Error(
-					__( 'The AI edit did not return blocks.', 'pressmind' )
+					__( 'The AI edit did not return blocks.', 'gutenwright' )
 				);
 			}
 
@@ -556,18 +566,21 @@ function AiEditPanel( { blockName, clientId, attributes } ) {
 				throw new Error(
 					__(
 						'The AI edit returned no insertable blocks.',
-						'pressmind'
+						'gutenwright'
 					)
 				);
 			}
 
 			replaceBlocks( clientId, parsedBlocks );
-			createSuccessNotice( __( 'Block updated with AI.', 'pressmind' ), {
-				type: 'snackbar',
-			} );
+			createSuccessNotice(
+				__( 'Block updated with AI.', 'gutenwright' ),
+				{
+					type: 'snackbar',
+				}
+			);
 		} catch ( apiError ) {
 			const message =
-				apiError?.message || __( 'The AI edit failed.', 'pressmind' );
+				apiError?.message || __( 'The AI edit failed.', 'gutenwright' );
 
 			setError( message );
 			createErrorNotice( message, { type: 'snackbar' } );
@@ -577,7 +590,7 @@ function AiEditPanel( { blockName, clientId, attributes } ) {
 	};
 
 	return (
-		<div className="pressmind-ai-edit-panel">
+		<div className="gutenwright-ai-edit-panel">
 			{ error ? (
 				<Notice
 					status="error"
@@ -588,10 +601,10 @@ function AiEditPanel( { blockName, clientId, attributes } ) {
 				</Notice>
 			) : null }
 			<TextareaControl
-				label={ __( 'Edit this block with AI', 'pressmind' ) }
+				label={ __( 'Edit this block with AI', 'gutenwright' ) }
 				help={ __(
 					'The current block code is sent as context.',
-					'pressmind'
+					'gutenwright'
 				) }
 				value={ prompt }
 				rows={ 3 }
@@ -604,12 +617,12 @@ function AiEditPanel( { blockName, clientId, attributes } ) {
 				disabled={ isGenerating || ! prompt.trim() }
 			>
 				{ isGenerating
-					? __( 'Editing…', 'pressmind' )
-					: __( 'Update Block with AI', 'pressmind' ) }
+					? __( 'Editing…', 'gutenwright' )
+					: __( 'Update Block with AI', 'gutenwright' ) }
 			</Button>
 			{ isGenerating ? <Spinner /> : null }
 			{ streamText ? (
-				<pre className="pressmind-prompt-block__stream">
+				<pre className="gutenwright-prompt-block__stream">
 					{ streamText }
 				</pre>
 			) : null }
@@ -619,12 +632,12 @@ function AiEditPanel( { blockName, clientId, attributes } ) {
 
 addFilter(
 	'editor.BlockEdit',
-	'pressmind/ai-edit-existing-block',
+	'gutenwright/ai-edit-existing-block',
 	( BlockEdit ) => ( props ) => {
 		const isEditableGeneratedBlock =
 			props.isSelected &&
 			( props.name === 'core/html' ||
-				( props.name === 'pressmind/sandbox' &&
+				( SANDBOX_BLOCK_NAMES.includes( props.name ) &&
 					! isSandboxGenerationDisallowed ) );
 
 		return (
@@ -642,15 +655,15 @@ addFilter(
 	}
 );
 
-registerBlockType( 'pressmind/sandbox', {
+const sandboxBlockSettings = {
 	apiVersion: 3,
-	title: __( 'AI Sandboxed Content', 'pressmind' ),
+	title: __( 'AI Sandboxed Content', 'gutenwright' ),
 	category: 'widgets',
 	icon: 'editor-code',
 	attributes: {
 		title: {
 			type: 'string',
-			default: __( 'AI generated interactive content', 'pressmind' ),
+			default: __( 'AI generated interactive content', 'gutenwright' ),
 		},
 		html: {
 			type: 'string',
@@ -676,4 +689,10 @@ registerBlockType( 'pressmind/sandbox', {
 	save() {
 		return null;
 	},
+};
+
+registerBlockType( SANDBOX_BLOCK_NAME, sandboxBlockSettings );
+registerBlockType( LEGACY_SANDBOX_BLOCK_NAME, {
+	...sandboxBlockSettings,
+	title: __( 'Legacy AI Sandboxed Content', 'gutenwright' ),
 } );

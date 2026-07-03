@@ -1,13 +1,13 @@
 {
   "$schema": "https://schemas.wp.org/trunk/block.json",
   "apiVersion": 3,
-  "name": "pressmind/prompt-block",
-  "version": "0.0.6",
-  "title": "Pressmind",
+  "name": "gutenwright/prompt-block",
+  "version": "0.0.8",
+  "title": "Gutenwright",
   "category": "widgets",
   "icon": "superhero",
   "description": "Generate Gutenberg-compatible blocks from a prompt and current post context.",
-  "textdomain": "pressmind",
+  "textdomain": "gutenwright",
   "attributes": {
     "prompt": {
       "type": "string",

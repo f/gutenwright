@@ -2,7 +2,7 @@
 /**
  * Plugin settings.
  *
- * @package Pressmind
+ * @package Gutenwright
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,15 +12,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Registers and reads AI provider settings.
  */
-class Pressmind_Settings {
-	const OPTION_NAME = 'pressmind_options';
+class Gutenwright_Settings {
+	const OPTION_NAME = 'gutenwright_options';
+	const LEGACY_OPTION_NAME = 'pressmind_options';
 
 	/**
 	 * Register WordPress hooks.
 	 */
 	public function register() {
+		add_action( 'admin_init', array( $this, 'maybe_migrate_legacy_options' ), 5 );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_menu', array( $this, 'register_options_page' ) );
+	}
+
+	/**
+	 * Copy settings saved under the previous project name into the new option.
+	 */
+	public function maybe_migrate_legacy_options() {
+		$options = get_option( self::OPTION_NAME, array() );
+
+		if ( is_array( $options ) && ! empty( $options ) ) {
+			return;
+		}
+
+		$legacy_options = get_option( self::LEGACY_OPTION_NAME, array() );
+
+		if ( is_array( $legacy_options ) && ! empty( $legacy_options ) ) {
+			update_option( self::OPTION_NAME, $legacy_options );
+		}
 	}
 
 	/**
@@ -28,7 +47,7 @@ class Pressmind_Settings {
 	 */
 	public function register_settings() {
 		register_setting(
-			'pressmind_settings',
+			'gutenwright_settings',
 			self::OPTION_NAME,
 			array(
 				'type'              => 'array',
@@ -38,99 +57,99 @@ class Pressmind_Settings {
 		);
 
 		add_settings_section(
-			'pressmind_provider',
-			__( 'AI Provider', 'pressmind' ),
+			'gutenwright_provider',
+			__( 'AI Provider', 'gutenwright' ),
 			array( $this, 'render_provider_section' ),
-			'pressmind_settings'
+			'gutenwright_settings'
 		);
 
 		add_settings_field(
 			'credential_source',
-			__( 'API Credentials', 'pressmind' ),
+			__( 'API Credentials', 'gutenwright' ),
 			array( $this, 'render_credential_source_field' ),
-			'pressmind_settings',
-			'pressmind_provider'
+			'gutenwright_settings',
+			'gutenwright_provider'
 		);
 
 		add_settings_field(
 			'connector_id',
-			__( 'Connector', 'pressmind' ),
+			__( 'Connector', 'gutenwright' ),
 			array( $this, 'render_connector_id_field' ),
-			'pressmind_settings',
-			'pressmind_provider',
-			array( 'class' => 'pressmind-connector-field' )
+			'gutenwright_settings',
+			'gutenwright_provider',
+			array( 'class' => 'gutenwright-connector-field' )
 		);
 
 		add_settings_field(
 			'api_key',
-			__( 'API Key', 'pressmind' ),
+			__( 'API Key', 'gutenwright' ),
 			array( $this, 'render_api_key_field' ),
-			'pressmind_settings',
-			'pressmind_provider',
-			array( 'class' => 'pressmind-custom-credential-field' )
+			'gutenwright_settings',
+			'gutenwright_provider',
+			array( 'class' => 'gutenwright-custom-credential-field' )
 		);
 
 		add_settings_field(
 			'api_endpoint',
-			__( 'API Endpoint', 'pressmind' ),
+			__( 'API Endpoint', 'gutenwright' ),
 			array( $this, 'render_api_endpoint_field' ),
-			'pressmind_settings',
-			'pressmind_provider',
-			array( 'class' => 'pressmind-custom-credential-field' )
+			'gutenwright_settings',
+			'gutenwright_provider',
+			array( 'class' => 'gutenwright-custom-credential-field' )
 		);
 
 		add_settings_field(
 			'model',
-			__( 'Model', 'pressmind' ),
+			__( 'Model', 'gutenwright' ),
 			array( $this, 'render_model_field' ),
-			'pressmind_settings',
-			'pressmind_provider'
+			'gutenwright_settings',
+			'gutenwright_provider'
 		);
 
 		add_settings_section(
-			'pressmind_rendering',
-			__( 'Rendering', 'pressmind' ),
+			'gutenwright_rendering',
+			__( 'Rendering', 'gutenwright' ),
 			array( $this, 'render_rendering_section' ),
-			'pressmind_settings'
+			'gutenwright_settings'
 		);
 
 		add_settings_field(
 			'seamless_mode',
-			__( 'Seamless Mode', 'pressmind' ),
+			__( 'Seamless Mode', 'gutenwright' ),
 			array( $this, 'render_seamless_mode_field' ),
-			'pressmind_settings',
-			'pressmind_rendering'
+			'gutenwright_settings',
+			'gutenwright_rendering'
 		);
 
 		add_settings_section(
-			'pressmind_images',
-			__( 'Image Generation', 'pressmind' ),
+			'gutenwright_images',
+			__( 'Image Generation', 'gutenwright' ),
 			array( $this, 'render_images_section' ),
-			'pressmind_settings'
+			'gutenwright_settings'
 		);
 
 		add_settings_field(
 			'enable_image_generation',
-			__( 'Enable Image Generation', 'pressmind' ),
+			__( 'Enable Image Generation', 'gutenwright' ),
 			array( $this, 'render_enable_image_generation_field' ),
-			'pressmind_settings',
-			'pressmind_images'
+			'gutenwright_settings',
+			'gutenwright_images'
 		);
 
 		add_settings_field(
 			'image_model',
-			__( 'Image Model', 'pressmind' ),
+			__( 'Image Model', 'gutenwright' ),
 			array( $this, 'render_image_model_field' ),
-			'pressmind_settings',
-			'pressmind_images'
+			'gutenwright_settings',
+			'gutenwright_images'
 		);
 
 		add_settings_field(
 			'image_size',
-			__( 'Image Size', 'pressmind' ),
+			__( 'Image Size', 'gutenwright' ),
 			array( $this, 'render_image_size_field' ),
-			'pressmind_settings',
-			'pressmind_images'
+			'gutenwright_settings',
+			'gutenwright_images'
 		);
 	}
 
@@ -139,10 +158,10 @@ class Pressmind_Settings {
 	 */
 	public function register_options_page() {
 		add_options_page(
-			__( 'Pressmind', 'pressmind' ),
-			__( 'Pressmind', 'pressmind' ),
+			__( 'Gutenwright', 'gutenwright' ),
+			__( 'Gutenwright', 'gutenwright' ),
 			'manage_options',
-			'pressmind-settings',
+			'gutenwright-settings',
 			array( $this, 'render_options_page' )
 		);
 	}
@@ -154,7 +173,7 @@ class Pressmind_Settings {
 	 */
 	public function get_options() {
 		$options = wp_parse_args(
-			get_option( self::OPTION_NAME, array() ),
+			$this->get_raw_options(),
 			$this->get_defaults()
 		);
 
@@ -181,7 +200,7 @@ class Pressmind_Settings {
 				}
 			}
 		} elseif ( ! empty( $options['api_key'] ) ) {
-			$options['api_key_source'] = 'pressmind';
+			$options['api_key_source'] = 'gutenwright';
 		} else {
 			$options['api_key_source'] = '';
 		}
@@ -215,7 +234,7 @@ class Pressmind_Settings {
 	 */
 	private function get_configured_credential_source() {
 		$options = wp_parse_args(
-			get_option( self::OPTION_NAME, array() ),
+			$this->get_raw_options(),
 			$this->get_defaults()
 		);
 
@@ -356,8 +375,8 @@ class Pressmind_Settings {
 	 * @return bool
 	 */
 	private function is_sandbox_generation_disallowed() {
-		if ( function_exists( 'pressmind_is_sandbox_generation_disallowed' ) ) {
-			return pressmind_is_sandbox_generation_disallowed();
+		if ( function_exists( 'gutenwright_is_sandbox_generation_disallowed' ) ) {
+			return gutenwright_is_sandbox_generation_disallowed();
 		}
 
 		if ( ! defined( 'DISALLOW_UNFILTERED_HTML' ) ) {
@@ -378,7 +397,7 @@ class Pressmind_Settings {
 	public function sanitize_options( $options ) {
 		$options  = is_array( $options ) ? $options : array();
 		$existing = wp_parse_args(
-			get_option( self::OPTION_NAME, array() ),
+			$this->get_raw_options(),
 			$this->get_defaults()
 		);
 
@@ -431,10 +450,27 @@ class Pressmind_Settings {
 	}
 
 	/**
+	 * Read saved settings, falling back to the pre-rename option key.
+	 *
+	 * @return array
+	 */
+	private function get_raw_options() {
+		$options = get_option( self::OPTION_NAME, array() );
+
+		if ( is_array( $options ) && ! empty( $options ) ) {
+			return $options;
+		}
+
+		$legacy_options = get_option( self::LEGACY_OPTION_NAME, array() );
+
+		return is_array( $legacy_options ) ? $legacy_options : array();
+	}
+
+	/**
 	 * Render section description.
 	 */
 	public function render_provider_section() {
-		echo '<p>' . esc_html__( 'Configure an OpenAI-compatible chat completions endpoint. API keys are used only server-side and never sent to the block editor.', 'pressmind' ) . '</p>';
+		echo '<p>' . esc_html__( 'Configure an OpenAI-compatible chat completions endpoint. API keys are used only server-side and never sent to the block editor.', 'gutenwright' ) . '</p>';
 	}
 
 	/**
@@ -444,32 +480,32 @@ class Pressmind_Settings {
 		$options = $this->get_options();
 
 		printf(
-			'<select id="pressmind-credential-source" name="%1$s[credential_source]">',
+			'<select id="gutenwright-credential-source" name="%1$s[credential_source]">',
 			esc_attr( self::OPTION_NAME )
 		);
 
 		printf(
 			'<option value="custom" %1$s>%2$s</option>',
 			selected( 'custom', $options['credential_source'], false ),
-			esc_html__( 'Custom API key', 'pressmind' )
+			esc_html__( 'Custom API key', 'gutenwright' )
 		);
 
 		printf(
 			'<option value="connector" %1$s %2$s>%3$s</option>',
 			selected( 'connector', $options['credential_source'], false ),
 			disabled( ! $this->has_connectors_api(), true, false ),
-			esc_html__( 'WordPress Connector', 'pressmind' )
+			esc_html__( 'WordPress Connector', 'gutenwright' )
 		);
 
 		echo '</select>';
 
 		printf(
 			'<p class="description">%s</p>',
-			esc_html__( 'Switching this setting shows only the relevant credential controls. Save changes to persist it.', 'pressmind' )
+			esc_html__( 'Switching this setting shows only the relevant credential controls. Save changes to persist it.', 'gutenwright' )
 		);
 
 		if ( ! $this->has_connectors_api() ) {
-			echo '<p class="description">' . esc_html__( 'Connectors API is not available on this WordPress version. Pressmind will use custom settings.', 'pressmind' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'Connectors API is not available on this WordPress version. Gutenwright will use custom settings.', 'gutenwright' ) . '</p>';
 		}
 	}
 
@@ -481,12 +517,12 @@ class Pressmind_Settings {
 		$connectors = $this->get_ai_connectors();
 
 		if ( empty( $connectors ) ) {
-			echo '<p class="description">' . esc_html__( 'No API-key AI connectors are currently registered.', 'pressmind' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'No API-key AI connectors are currently registered.', 'gutenwright' ) . '</p>';
 			return;
 		}
 
 		printf(
-			'<select id="pressmind-connector-id" name="%1$s[connector_id]">',
+			'<select id="gutenwright-connector-id" name="%1$s[connector_id]">',
 			esc_attr( self::OPTION_NAME )
 		);
 
@@ -503,21 +539,21 @@ class Pressmind_Settings {
 		}
 
 		echo '</select>';
-		echo '<p class="description">' . esc_html__( 'The selected connector provides the API key. Choose the model name below.', 'pressmind' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'The selected connector provides the API key. Choose the model name below.', 'gutenwright' ) . '</p>';
 
 		$current_connector = $connectors[ $options['connector_id'] ] ?? array();
 		$current_endpoint  = $this->get_connector_endpoint_default( $options['connector_id'], $current_connector );
 
 		if ( $current_endpoint ) {
 			printf(
-				'<p class="description" id="pressmind-connector-endpoint-description">%s <code id="pressmind-connector-endpoint">%s</code></p>',
-				esc_html__( 'Requests will be sent to:', 'pressmind' ),
+				'<p class="description" id="gutenwright-connector-endpoint-description">%s <code id="gutenwright-connector-endpoint">%s</code></p>',
+				esc_html__( 'Requests will be sent to:', 'gutenwright' ),
 				esc_html( $current_endpoint )
 			);
 		} else {
 			printf(
-				'<p class="description" id="pressmind-connector-endpoint-description" hidden>%s <code id="pressmind-connector-endpoint"></code></p>',
-				esc_html__( 'Requests will be sent to:', 'pressmind' )
+				'<p class="description" id="gutenwright-connector-endpoint-description" hidden>%s <code id="gutenwright-connector-endpoint"></code></p>',
+				esc_html__( 'Requests will be sent to:', 'gutenwright' )
 			);
 		}
 	}
@@ -528,7 +564,7 @@ class Pressmind_Settings {
 	public function render_api_key_field() {
 		$options       = $this->get_options();
 		$saved_options = wp_parse_args(
-			get_option( self::OPTION_NAME, array() ),
+			$this->get_raw_options(),
 			$this->get_defaults()
 		);
 
@@ -539,9 +575,9 @@ class Pressmind_Settings {
 		);
 
 		if ( 'connector' === $options['api_key_source'] ) {
-			echo '<p class="description">' . esc_html__( 'Currently using the selected WordPress Connector key. This custom key is saved separately and is only used when Custom settings is selected.', 'pressmind' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'Currently using the selected WordPress Connector key. This custom key is saved separately and is only used when Custom settings is selected.', 'gutenwright' ) . '</p>';
 		} elseif ( 'connector_missing' === $options['api_key_source'] ) {
-			echo '<p class="description">' . esc_html__( 'The selected connector does not have an available key yet. Configure it in Settings > Connectors or choose Custom settings.', 'pressmind' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'The selected connector does not have an available key yet. Configure it in Settings > Connectors or choose Custom settings.', 'gutenwright' ) . '</p>';
 		}
 	}
 
@@ -552,7 +588,7 @@ class Pressmind_Settings {
 		$options = $this->get_options();
 
 		printf(
-			'<input type="url" id="pressmind-api-endpoint" name="%1$s[api_endpoint]" value="%2$s" class="regular-text" />',
+			'<input type="url" id="gutenwright-api-endpoint" name="%1$s[api_endpoint]" value="%2$s" class="regular-text" />',
 			esc_attr( self::OPTION_NAME ),
 			esc_url( $options['api_endpoint'] )
 		);
@@ -565,7 +601,7 @@ class Pressmind_Settings {
 		$options = $this->get_options();
 
 		printf(
-			'<input type="text" id="pressmind-model" name="%1$s[model]" value="%2$s" class="regular-text" />',
+			'<input type="text" id="gutenwright-model" name="%1$s[model]" value="%2$s" class="regular-text" />',
 			esc_attr( self::OPTION_NAME ),
 			esc_attr( $options['model'] )
 		);
@@ -578,13 +614,13 @@ class Pressmind_Settings {
 		$options  = $this->get_options();
 		$current  = 'auto' === ( $options['response_format_mode'] ?? 'auto' ) ? 'auto' : $options['response_format'];
 		$choices  = array(
-			'auto'        => __( 'Auto — choose from model/provider', 'pressmind' ),
-			'none'        => __( 'None — rely on the system prompt to enforce JSON', 'pressmind' ),
-			'json_object' => __( 'json_object — OpenAI / Gemini compat', 'pressmind' ),
-			'json_schema' => __( 'json_schema — Anthropic compat, strict schema', 'pressmind' ),
+			'auto'        => __( 'Auto — choose from model/provider', 'gutenwright' ),
+			'none'        => __( 'None — rely on the system prompt to enforce JSON', 'gutenwright' ),
+			'json_object' => __( 'json_object — OpenAI / Gemini compat', 'gutenwright' ),
+			'json_schema' => __( 'json_schema — Anthropic compat, strict schema', 'gutenwright' ),
 		);
 
-		printf( '<select id="pressmind-response-format" name="%1$s[response_format]">', esc_attr( self::OPTION_NAME ) );
+		printf( '<select id="gutenwright-response-format" name="%1$s[response_format]">', esc_attr( self::OPTION_NAME ) );
 
 		foreach ( $choices as $value => $label ) {
 			printf(
@@ -597,18 +633,18 @@ class Pressmind_Settings {
 
 		echo '</select>';
 		printf(
-			'<p class="description">%1$s <code id="pressmind-response-format-resolved">%2$s</code></p>',
-			esc_html__( 'Automatic mode currently resolves to:', 'pressmind' ),
+			'<p class="description">%1$s <code id="gutenwright-response-format-resolved">%2$s</code></p>',
+			esc_html__( 'Automatic mode currently resolves to:', 'gutenwright' ),
 			esc_html( $options['resolved_response_format'] )
 		);
-		echo '<p class="description">' . esc_html__( 'Leave this on Auto unless a provider rejects the generated response format.', 'pressmind' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Leave this on Auto unless a provider rejects the generated response format.', 'gutenwright' ) . '</p>';
 	}
 
 	/**
 	 * Render rendering section description.
 	 */
 	public function render_rendering_section() {
-		echo '<p>' . esc_html__( 'Choose whether generated interactive HTML runs in an isolated iframe or directly in the page.', 'pressmind' ) . '</p>';
+		echo '<p>' . esc_html__( 'Choose whether generated interactive HTML runs in an isolated iframe or directly in the page.', 'gutenwright' ) . '</p>';
 	}
 
 	/**
@@ -623,22 +659,22 @@ class Pressmind_Settings {
 			esc_attr( self::OPTION_NAME ),
 			checked( ! empty( $options['seamless_mode'] ), true, false ),
 			disabled( $is_disabled, true, false ),
-			esc_html__( 'I understand that seamless mode disables iframe sandboxing and injects generated HTML, CSS, and JavaScript directly into the page.', 'pressmind' )
+			esc_html__( 'I understand that seamless mode disables iframe sandboxing and injects generated HTML, CSS, and JavaScript directly into the page.', 'gutenwright' )
 		);
 
 		if ( $is_disabled ) {
-			echo '<p class="description">' . esc_html__( 'Seamless mode is unavailable because DISALLOW_UNFILTERED_HTML is enabled. Change that site setting before enabling direct code injection.', 'pressmind' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'Seamless mode is unavailable because DISALLOW_UNFILTERED_HTML is enabled. Change that site setting before enabling direct code injection.', 'gutenwright' ) . '</p>';
 			return;
 		}
 
-		echo '<p class="description">' . esc_html__( 'Keep this off to isolate generated scripts and styles in sandboxed iframes. Turn it on only for trusted editors and reviewed output.', 'pressmind' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Keep this off to isolate generated scripts and styles in sandboxed iframes. Turn it on only for trusted editors and reviewed output.', 'gutenwright' ) . '</p>';
 	}
 
 	/**
 	 * Render image section description.
 	 */
 	public function render_images_section() {
-		echo '<p>' . esc_html__( 'When enabled, AI can request generated images. PHP will call OpenAI Images, save the result into the Media Library, and insert a core/image block.', 'pressmind' ) . '</p>';
+		echo '<p>' . esc_html__( 'When enabled, AI can request generated images. PHP will call OpenAI Images, save the result into the Media Library, and insert a core/image block.', 'gutenwright' ) . '</p>';
 	}
 
 	/**
@@ -651,7 +687,7 @@ class Pressmind_Settings {
 			'<label><input type="checkbox" name="%1$s[enable_image_generation]" value="1" %2$s /> %3$s</label>',
 			esc_attr( self::OPTION_NAME ),
 			checked( ! empty( $options['enable_image_generation'] ), true, false ),
-			esc_html__( 'Allow AI to generate images through the OpenAI Images API.', 'pressmind' )
+			esc_html__( 'Allow AI to generate images through the OpenAI Images API.', 'gutenwright' )
 		);
 	}
 
@@ -679,7 +715,7 @@ class Pressmind_Settings {
 			esc_attr( self::OPTION_NAME ),
 			esc_attr( $options['image_size'] )
 		);
-		echo '<p class="description">' . esc_html__( 'Example: 1024x1024. Availability depends on the selected image model.', 'pressmind' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Example: 1024x1024. Availability depends on the selected image model.', 'gutenwright' ) . '</p>';
 	}
 
 	/**
@@ -687,11 +723,11 @@ class Pressmind_Settings {
 	 */
 	public function render_advanced_settings() {
 		?>
-		<details class="pressmind-advanced-settings">
-			<summary><?php esc_html_e( 'Advanced settings', 'pressmind' ); ?></summary>
+		<details class="gutenwright-advanced-settings">
+			<summary><?php esc_html_e( 'Advanced settings', 'gutenwright' ); ?></summary>
 			<table class="form-table" role="presentation">
 				<tr>
-					<th scope="row"><?php esc_html_e( 'Response Format', 'pressmind' ); ?></th>
+					<th scope="row"><?php esc_html_e( 'Response Format', 'gutenwright' ); ?></th>
 					<td><?php $this->render_response_format_field(); ?></td>
 				</tr>
 			</table>
@@ -708,11 +744,11 @@ class Pressmind_Settings {
 		}
 		?>
 		<div class="wrap">
-			<h1><?php esc_html_e( 'Pressmind', 'pressmind' ); ?></h1>
+			<h1><?php esc_html_e( 'Gutenwright', 'gutenwright' ); ?></h1>
 			<form method="post" action="options.php">
 				<?php
-				settings_fields( 'pressmind_settings' );
-				do_settings_sections( 'pressmind_settings' );
+				settings_fields( 'gutenwright_settings' );
+				do_settings_sections( 'gutenwright_settings' );
 				$this->render_advanced_settings();
 				submit_button();
 				?>
@@ -720,7 +756,7 @@ class Pressmind_Settings {
 		</div>
 		<script>
 			( function () {
-				const source = document.getElementById( 'pressmind-credential-source' );
+				const source = document.getElementById( 'gutenwright-credential-source' );
 
 				if ( ! source ) {
 					return;
@@ -730,32 +766,32 @@ class Pressmind_Settings {
 					const isConnector = source.value === 'connector';
 
 					document
-						.querySelectorAll( '.pressmind-connector-field' )
+						.querySelectorAll( '.gutenwright-connector-field' )
 						.forEach( ( row ) => {
 							row.style.display = isConnector ? '' : 'none';
 						} );
 
 					document
-						.querySelectorAll( '.pressmind-custom-credential-field' )
+						.querySelectorAll( '.gutenwright-custom-credential-field' )
 						.forEach( ( row ) => {
 							row.style.display = isConnector ? 'none' : '';
 						} );
 				};
 
-				const connector = document.getElementById( 'pressmind-connector-id' );
-				const endpoint = document.getElementById( 'pressmind-api-endpoint' );
+				const connector = document.getElementById( 'gutenwright-connector-id' );
+				const endpoint = document.getElementById( 'gutenwright-api-endpoint' );
 				const endpointMessage = document.getElementById(
-					'pressmind-connector-endpoint-description'
+					'gutenwright-connector-endpoint-description'
 				);
 				const endpointLabel = document.getElementById(
-					'pressmind-connector-endpoint'
+					'gutenwright-connector-endpoint'
 				);
-				const model = document.getElementById( 'pressmind-model' );
+				const model = document.getElementById( 'gutenwright-model' );
 				const responseFormat = document.getElementById(
-					'pressmind-response-format'
+					'gutenwright-response-format'
 				);
 				const resolvedResponseFormat = document.getElementById(
-					'pressmind-response-format-resolved'
+					'gutenwright-response-format-resolved'
 				);
 
 				const inferResponseFormat = () => {

@@ -1,6 +1,6 @@
 {
-	"name": "pressmind",
-	"version": "0.0.7",
+	"name": "gutenwright",
+	"version": "0.0.8",
 	"description": "Generate Gutenberg-compatible blocks from prompts and current post context.",
 	"license": "GPL-2.0-or-later",
 	"scripts": {
